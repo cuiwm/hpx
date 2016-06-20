@@ -24,9 +24,11 @@
 #include <hpx/util/deferred_call.hpp>
 #include <hpx/util/detail/pack.hpp>
 #include <hpx/util/invoke.hpp>
-#include <hpx/util/invoke.hpp>
+#include <hpx/util/range.hpp>
 #include <hpx/util/tuple.hpp>
 #include <hpx/util/unwrapped.hpp>
+
+#include <boost/throw_exception.hpp>
 
 #include <cstddef>
 #include <iterator>
@@ -35,10 +37,6 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
-
-#include <boost/range/const_iterator.hpp>
-#include <boost/range/functions.hpp>
-#include <boost/throw_exception.hpp>
 
 #if defined(HPX_HAVE_CXX1Y_EXPERIMENTAL_OPTIONAL)
 #include <experimental/optional>
@@ -753,11 +751,7 @@ namespace hpx { namespace parallel { namespace execution
         template <typename F, typename Shape, typename ... Ts>
         struct bulk_function_result
         {
-            typedef typename
-                    boost::range_const_iterator<Shape>::type
-                iterator_type;
-            typedef typename
-                    std::iterator_traits<iterator_type>::value_type
+            typedef typename hpx::traits::range_traits<Shape>::value_type
                 value_type;
             typedef typename
                     hpx::util::detail::deferred_result_of<
@@ -791,15 +785,7 @@ namespace hpx { namespace parallel { namespace execution
                         typename bulk_function_result<F, Shape, Ts...>::type,
                         Ts...
                     >::type> results;
-
-// Before Boost V1.56 boost::size() does not respect the iterator category of
-// its argument.
-#if BOOST_VERSION < 105600
-                results.reserve(
-                    std::distance(boost::begin(shape), boost::end(shape)));
-#else
-                results.reserve(boost::size(shape));
-#endif
+                results.reserve(util::size(shape));
 
                 for (auto const& elem: shape)
                 {
@@ -967,15 +953,7 @@ namespace hpx { namespace parallel { namespace execution
                     typename bulk_execute_result_impl<
                             F, Shape, false, Ts...
                         >::type results;
-
-// Before Boost V1.56 boost::size() does not respect the iterator category of
-// its argument.
-#if BOOST_VERSION < 105600
-                    results.reserve(
-                        std::distance(boost::begin(shape), boost::end(shape)));
-#else
-                    results.reserve(boost::size(shape));
-#endif
+                    results.reserve(util::size(shape));
 
                     for (auto const& elem : shape)
                     {
@@ -1084,16 +1062,8 @@ namespace hpx { namespace parallel { namespace execution
                     >::type result_type;
 
                 try {
-// Before Boost V1.56 boost::size() does not respect the iterator category of
-// its argument.
-#if BOOST_VERSION < 105600
                     result_type results;
-                    results.reserve(
-                        std::distance(boost::begin(shape), boost::end(shape)));
-#else
-                    result_type results;
-                    results.reserve(boost::size(shape));
-#endif
+                    results.reserve(util::size(shape));
                     for (auto const& elem : shape)
                     {
                         results.push_back(
@@ -1127,16 +1097,8 @@ namespace hpx { namespace parallel { namespace execution
                     > result_type;
 
                 try {
-// Before Boost V1.56 boost::size() does not respect the iterator category of
-// its argument.
-#if BOOST_VERSION < 105600
                     result_type results;
-                    results.reserve(
-                        std::distance(boost::begin(shape), boost::end(shape)));
-#else
-                    result_type results;
-                    results.reserve(boost::size(shape));
-#endif
+                    results.reserve(util::size(shape));
 
                     for (auto const& elem : shape)
                     {
@@ -1261,11 +1223,7 @@ namespace hpx { namespace parallel { namespace execution
         template <typename F, typename Shape, typename Future, typename ... Ts>
         struct then_bulk_function_result
         {
-            typedef typename
-                    boost::range_const_iterator<Shape>::type
-                iterator_type;
-            typedef typename
-                    std::iterator_traits<iterator_type>::value_type
+            typedef typename hpx::traits::range_traits<Shape>::value_type
                 value_type;
             typedef typename
                     hpx::util::detail::deferred_result_of<
